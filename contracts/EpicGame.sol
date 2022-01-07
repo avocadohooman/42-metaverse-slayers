@@ -6,6 +6,8 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "hardhat/console.sol";
+// Helper we wrote to encode in Base64
+import "./libraries/Base64.sol";
 
 contract EpicGame is ERC721{
 	/*
@@ -110,5 +112,50 @@ contract EpicGame is ERC721{
 		nftHolders[msg.sender] = newItemId;
 
 		_tokenIds.increment();
+	}
+
+
+	function tokenURI(uint _tokenId) public view override returns (string memory) {
+		CharacterAttributes memory charAttributes = nftHolderAttributes[_tokenId];
+
+		string memory strHp = Strings.toString(charAttributes.hp);
+		string memory strMaxHp = Strings.toString(charAttributes.maxHp);
+		string memory strDm = Strings.toString(charAttributes.darkMatter);
+		string memory strMaxDm = Strings.toString(charAttributes.maxDarkMatter);
+		string memory strAttackDamage = Strings.toString(charAttributes.attackDamage);
+
+		string memory json = Base64.encode(
+			bytes(
+				string(
+					abi.encodePacked(
+						'{"name": "',
+						charAttributes.name,
+						' -- NFT #: ',
+						Strings.toString(_tokenId),
+						'", "description": "This is an NFT that lets people play in the game Metaverse Slayer!", "image": "',
+						charAttributes.imageURI,
+						'", "attributes": [ { "trait_type": "Health Points", "value": ',strHp,', "max_value":',strMaxHp,'}, { "trait_type": "Attack Damage", "value": ',
+						strAttackDamage,'}, { "trait_type": "Dark Matter Points", "value": ',strDm,', "max_value":',strMaxDm,'}]}'
+					)
+				)
+			)
+		);
+
+		string memory output = string(
+			abi.encodePacked("data:application/json;base64,", json)
+		);
+
+		console.log("\n--------------------");
+		console.log(
+				string(
+					abi.encodePacked(
+						"https://nftpreview.0xdev.codes/?code=",
+						output
+					)
+				)
+		);
+		console.log("--------------------\n");
+
+		return output;
 	}
 }
