@@ -24,6 +24,16 @@ contract EpicGame is ERC721{
 		uint attackDamage;
 	}
 
+	struct BigBoss {
+		string name;
+		string imageURI;
+		uint hp;
+		uint maxHp;
+		uint attackDamage;
+	}
+
+	BigBoss public bigBoss;
+
 	// The tokenId is the NFTs unique identifier, it's just a number that goes
   	// 0, 1, 2, 3, etc.
 	using Counters for Counters.Counter;
@@ -42,6 +52,12 @@ contract EpicGame is ERC721{
 	// A mapping/hash table from an address => the NFTs tokenId. Gives me an ez way
 	// to store the owner of the NFT and reference it later.
 	mapping(address => uint256) public nftHolders;
+	
+	/*
+		Here we define event listener for NFTs minted, and when an attack has been completed
+	*/
+	event CharacterNFTMinted(address sender, uint256 tokenId, uint256 characterIndex);
+	event AttackComplete(uint newBossHp, uint newPlayerHp);
 
 	/*
   		Data passed in to the contract when it's first created initializing the characters.
@@ -52,7 +68,11 @@ contract EpicGame is ERC721{
 		string[] memory characterImageURIs,
 		uint[] memory characterHp,
 		uint[] memory characterDarkMatter,
-		uint[] memory characterAttackingDmg
+		uint[] memory characterAttackingDmg,
+		string memory bossName, // These new variables would be passed in via run.js or deploy.js.
+		string memory bossImageURI,
+		uint bossHp,
+		uint bossAttackDamage
 	) ERC721("SpaceHeroes", "SPACEONAUTS") {
         for(uint i = 0; i < characterNames.length; i++) {
 			defaultCharacters.push(CharacterAttributes({
@@ -70,9 +90,80 @@ contract EpicGame is ERC721{
 			console.log("Done initializing %s img %s", c.name, c.imageURI);
 			console.log("w/ HP %s and DM %s", c.hp, c.darkMatter);
 		}
+		bigBoss = BigBoss({
+			name: bossName,
+			imageURI: bossImageURI,
+			hp: bossHp,
+			maxHp: bossHp,
+			attackDamage: bossAttackDamage
+		});
+		console.log("Done initializing boss %s w/ HP %s, img %s", bigBoss.name, bigBoss.hp, bigBoss.imageURI);
 		// here we increment the tokenId so that the first NFT character starts with 1, instead of 0
 		_tokenIds.increment();
     }
+
+	// here we return the NFT to a user, if one exists
+	function checkIfUserHasNFT() public view returns (CharacterAttributes memory) {
+		uint256 nftTokenIdOfPlayer = nftHolders[msg.sender];
+		if (nftTokenIdOfPlayer > 0) {
+			return nftHolderAttributes[nftTokenIdOfPlayer];
+		} else {
+			CharacterAttributes memory emptyStruct;
+			return emptyStruct;
+		}
+	}
+
+	function getAllDefaultCharacters() public view returns (CharacterAttributes[] memory) {
+		return defaultCharacters;
+	}
+
+	function getBigBoss() public view returns (BigBoss memory) {
+		return bigBoss;
+	}
+
+	function attackBoss() public {
+		uint256 nftTokenIdOfPlayer = nftHolders[msg.sender];
+		/*
+			I use the keyword storage here as well which will be more important a bit later. 
+			Basically, when we do storage and then do player.hp = 0 then it would change the 
+			health value on the NFT itself to 0. In contrast, if we were to use memory instead of 
+			storage it would create a local copy of the variable within the scope of the function. 
+			That means if we did player.hp = 0 it would only be that way within the function and 
+			wouldn't change the global value.
+
+			storage = global change
+			memory = local copy change
+		*/
+		CharacterAttributes storage player = nftHolderAttributes[nftTokenIdOfPlayer];
+		console.log("\nPlayer w/ character %s about to attack. Has %s HP and %s AD", player.name, player.hp, player.attackDamage);
+		console.log("Boss %s has %s HP and %s AD", bigBoss.name, bigBoss.hp, bigBoss.attackDamage);
+
+		/*
+			Here we make sure the plater has > 0 hp == is alive
+		*/
+		require(player.hp > 0, "Error: character must have HP in order to attack");
+				/*
+			Here we make sure the plater has > 0 hp == is alive
+		*/
+		require(bigBoss.hp > 0, "Error: boss must have HP in order to attack");
+
+		// Allow player to attack boss.
+		if (bigBoss.hp < player.attackDamage) {
+			bigBoss.hp = 0;
+		} else {
+			bigBoss.hp = bigBoss.hp - player.attackDamage;
+		}
+		// Allow boss to attack player.
+		if (player.hp < bigBoss.attackDamage) {
+			player.hp = 0;
+		} else {
+			player.hp = player.hp - bigBoss.attackDamage;
+		}
+		// Console for ease.
+		console.log("Player attacked boss. New boss hp: %s", bigBoss.hp);
+		console.log("Boss attacked player. New player hp: %s\n", player.hp);
+		emit AttackComplete(bigBoss.hp, player.hp);
+	}
 
 	/*
 		External vs public:
@@ -111,6 +202,7 @@ contract EpicGame is ERC721{
 		// keep an easy way to see who owns that NFT
 		nftHolders[msg.sender] = newItemId;
 
+		emit CharacterNFTMinted(msg.sender, newItemId, _characterIndex);
 		_tokenIds.increment();
 	}
 
