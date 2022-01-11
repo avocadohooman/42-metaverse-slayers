@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import './App.css';
 import { ethers } from "ethers";
 import SelectCharacter from "./Components/SelectCharacter/SelectCharacter";
+import Arena from "./Components/Arena/Arena";
 import config from './config/config';
 
 // Constants
