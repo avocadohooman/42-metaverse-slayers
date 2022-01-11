@@ -24,6 +24,18 @@
   color: white;
 }
 
+.character-selection-container {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+.character-box {
+	display: flex;
+	flex-direction: column;
+}
+
 .sub-text {
   font-size: 25px;
   color: white;
