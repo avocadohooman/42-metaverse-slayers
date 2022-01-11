@@ -14,7 +14,6 @@ const App = () => {
 	* Right under current account, setup this new state property
 	*/
 	const [characterNFT, setCharacterNFT] = useState(null);
-	const [defaultCharacters, setDefaultCharacters] = useState(null);
 
 	// Render Methods
 	const renderContent = () => {
@@ -41,7 +40,7 @@ const App = () => {
 		*/
 	} else if (currentAccount && !characterNFT) {
 		return (
-			 <SelectCharacter setCharacterNFT={setCharacterNFT} defaultCharacters={defaultCharacters}/>
+			 <SelectCharacter setCharacterNFT={setCharacterNFT}/>
 		);
 	}
 	};
@@ -114,30 +113,6 @@ const App = () => {
 		}
 	}
 
-	const getDefaultCharacters = async (gameContract) => {
-		try {
-			const txn = await gameContract.getAllDefaultCharacters();
-			const defaultCharacters = [];
-			txn.forEach(c => {
-				const character = {
-					index: c.characterIndex.toNumber(),
-					name: c.name,
-					imageURI: c.imageURI,
-					hp: c.hp.toNumber(),
-					maxHp: c.maxHp.toNumber(),
-					darkMatter: c.darkMatter.toNumber(),
-					maxDarkMatter: c.maxDarkMatter.toNumber(),
-					attackDamage: c.attackDamage.toNumber(),
-				}
-				defaultCharacters.push(character);
-			});
-			console.log('defaultCharacters', defaultCharacters);
-			setDefaultCharacters(defaultCharacters);	
-		} catch (error) {
-			console.log(error);
-		}
-	}
-
 	useEffect(() => {
 		checkIfWalletIsConnected();
 	// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -167,7 +142,7 @@ const App = () => {
 				setCharacterNFT(userCharacter);
 			} else {
 				console.log('No character NFT found. Getting default game characters...');
-				getDefaultCharacters(gameContract);
+				// getDefaultCharacters(gameContract);
 			}
 		}
 		if (currentAccount) {
