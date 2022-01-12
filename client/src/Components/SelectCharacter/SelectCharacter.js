@@ -3,6 +3,7 @@ import './SelectCharacter.css';
 import { ethers } from "ethers";
 import config from '../../config/config';
 import characterService from '../../services/characterService';
+import LoadingIndicator from '../LoadingIndicator';
 
 const SelectCharacter = ({ setCharacterNFT }) => {
 	const [isMinting, setIsMinting] = useState(false);
@@ -21,7 +22,7 @@ const SelectCharacter = ({ setCharacterNFT }) => {
 				window.alert("Ethereum object doesn't exist!");
 			}
 		} catch (error) {
-			console.log('mintPlayerNFT Error', error);
+			console.warn('MintCharacterAction Error:', error);
 		}
 		setIsMinting(false);
 	}
@@ -138,6 +139,18 @@ const SelectCharacter = ({ setCharacterNFT }) => {
 			{defaultCharacters.length > 0 && (
 				<div className='character-grid character-item'>{renderCharacters()}</div>
 			)}
+			{isMinting && (
+				<div className="loading">
+					<div className="indicator">
+					<LoadingIndicator />
+					<p>Minting In Progress...</p>
+					</div>
+					<img
+					src="https://media2.giphy.com/media/61tYloUgq1eOk/giphy.gif?cid=ecf05e47dg95zbpabxhmhaksvoy8h526f96k4em0ndvx078s&rid=giphy.gif&ct=g"
+					alt="Minting loading indicator"
+					/>
+				</div>
+    		)}
 		</div>
 	);
 }

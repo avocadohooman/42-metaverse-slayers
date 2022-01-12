@@ -12,6 +12,7 @@ const Arena = ({ characterNFT, setCharacterNFT }) => {
 	const [gameContract, setGameContract] = useState(null);
 	const [boss, setBoss] = useState(null);
 	const [isAttacking, setIsAttacking] = useState('');
+	const [isLoading, setIsLoading] = useState(false);
 
 	const runAttackAction = async () => {
 		setIsAttacking('attacking');

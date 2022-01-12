@@ -5,6 +5,7 @@ import SelectCharacter from "./Components/SelectCharacter/SelectCharacter";
 import Arena from "./Components/Arena/Arena";
 import config from './config/config';
 import characterService from './services/characterService';
+import LoadingIndicator from './Components/LoadingIndicator';
 
 // Constants
 
@@ -16,9 +17,14 @@ const App = () => {
 	* Right under current account, setup this new state property
 	*/
 	const [characterNFT, setCharacterNFT] = useState(null);
+	const [isLoading, setIsLoading] = useState(false);
 
 	// Render Methods
 	const renderContent = () => {
+
+		if (isLoading) {
+			return <LoadingIndicator />;
+		}
 		/*
 			Render scenario #1: there is no current account
 		*/
@@ -57,6 +63,7 @@ const App = () => {
 			const { ethereum } = window;
 			if (!ethereum) {
 				window.alert("Make sure you have MetaMask!");
+				setIsLoading(false);
 				return ;
 			}
 			console.log("We have the ehtereum object", ethereum);
@@ -120,7 +127,9 @@ const App = () => {
 	}
 
 	useEffect(() => {
+		setIsLoading(true);
 		checkIfWalletIsConnected();
+		setIsLoading(false);
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
@@ -144,6 +153,7 @@ const App = () => {
 				console.log('No character NFT found. Getting default game characters...');
 				// getDefaultCharacters(gameContract);
 			}
+			setIsLoading(false);
 		}
 		if (currentAccount) {
 			console.log('CurrentAccount:', currentAccount);
