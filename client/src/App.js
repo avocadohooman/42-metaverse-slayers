@@ -71,7 +71,6 @@ const App = () => {
 			console.log('address', address);
 			const accounts = await ethereum.request({method: 'eth_accounts'});
 			const chainId = await ethereum.request({ method: 'eth_chainId' });
-			console.log("Connected to chain " + chainId);
 
 			// String, hex code of the chainId of the Rinkebey, and localhost test network
 			const rinkebyChainId = "0x4";
@@ -82,7 +81,6 @@ const App = () => {
 			
 			if (accounts.length > 0) {
 				const account = accounts[0];
-				console.log('found an authorized account: ', account);
 				setCurrentAccount(account);
 			} else {
 				console.log('no authorized account found');

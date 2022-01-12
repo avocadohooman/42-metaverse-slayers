@@ -68,7 +68,6 @@ const Arena = ({ characterNFT, setCharacterNFT }) => {
 		const fetchBoss = async () => {
 			try {
 				const bossTxn = await gameContract.getBigBoss();
-				console.log('big boss bossTxn', bossTxn);
 				const bossCharacter = characterService.transformCharacterData(bossTxn);
 				setBoss(bossCharacter);
 			} catch (error) {
@@ -84,6 +83,7 @@ const Arena = ({ characterNFT, setCharacterNFT }) => {
 				const sortedPlayers =  players.filter((p) => p.totalDamage).sort(function(a, b) {
                     return a.totalDamage > b.totalDamage ? 1 : -1;
                 });
+				console.log('sortedPlayers', sortedPlayers);
 				setAllPlayers(sortedPlayers)
 			} catch (error) {
 				console.log(error);

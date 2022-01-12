@@ -96,7 +96,7 @@ contract EpicGame is ERC721{
 		string memory bossImageURI,
 		uint bossHp,
 		uint bossAttackDamage
-	) ERC721("SpaceHeroes", "SPACEONAUTS") {
+	) ERC721("42-Metaverse-Heroes", "42HEROES") {
         for(uint i = 0; i < characterNames.length; i++) {
 			defaultCharacters.push(CharacterAttributes({
 				characterIndex: i,

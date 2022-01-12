@@ -18,7 +18,6 @@ const SelectCharacter = ({ setCharacterNFT }) => {
 				const mintTxn = await gameContract.mintCharacterNFT(characterId);
 				await mintTxn.wait();
 				console.log('mintTxn:', mintTxn);
-				setCharacterNFT(characterService.transformCharacterData(mintTxn));
 			} else {
 				window.alert("Ethereum object doesn't exist!");
 			}
@@ -66,7 +65,6 @@ const SelectCharacter = ({ setCharacterNFT }) => {
 			/*
 			 * Set all mint-able characters in state
 			 */
-			console.log('defaultCharacters', characters);
 			setDefaultCharacters(characters);
 		  } catch (error) {
 			console.error('Something went wrong fetching characters:', error);
@@ -89,7 +87,7 @@ const SelectCharacter = ({ setCharacterNFT }) => {
 			if (gameContract) {
 				const characterNFT = await gameContract.checkIfUserHasNFT();
 				console.log('CharacterNFT: ', characterNFT);
-				// setCharacterNFT(transformCharacterData(characterNFT));
+				setCharacterNFT(characterService.transformCharacterData(characterNFT));
 			}
 		};
 
