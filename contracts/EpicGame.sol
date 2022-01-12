@@ -76,7 +76,6 @@ contract EpicGame is ERC721{
 	event CriticalHit(uint criticalDamage);
 	event AttackMiss(string attackMiss);
 
-
 	/*
 		An array that will hold and return all players. Updated every time the function
 		getAllPlayers() is being called

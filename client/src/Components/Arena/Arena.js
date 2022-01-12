@@ -3,7 +3,9 @@ import './Arena.css';
 import { ethers } from "ethers";
 import config from '../../config/config';
 import characterService from '../../services/characterService';
+import playerService from '../../services/playerService';
 import LoadingIndicator from '../LoadingIndicator';
+import Highscore from '../Highscore/Highscore';
 
 /*
 * We pass in our characterNFT metadata so we can a cool card in our UI
@@ -14,6 +16,9 @@ const Arena = ({ characterNFT, setCharacterNFT }) => {
 	const [boss, setBoss] = useState(null);
 	const [isAttacking, setIsAttacking] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
+	const [newCriticalHit, setNewCriticalHit] = useState('');
+	const [newAttackMiss, setNewAttackMiss] = useState('');
+	const [allPlayers, setAllPlayers] = useState([]);
 	/*
 	* Toast state management
 	*/
@@ -24,7 +29,7 @@ const Arena = ({ characterNFT, setCharacterNFT }) => {
 		if (gameContract) {
 			try {
 				console.log('attacking boss...');
-				const attackTxn = await gameContract.attackBoss();
+				const attackTxn = await gameContract.attackBoss({gasLimit: 300000});
 				await attackTxn.wait();
 				console.log('attackTxn', attackTxn);
 				setIsAttacking('hit');
@@ -65,8 +70,21 @@ const Arena = ({ characterNFT, setCharacterNFT }) => {
 				const bossTxn = await gameContract.getBigBoss();
 				console.log('big boss bossTxn', bossTxn);
 				const bossCharacter = characterService.transformCharacterData(bossTxn);
-				console.log('bossCharacter', bossCharacter);
 				setBoss(bossCharacter);
+			} catch (error) {
+				console.log(error);
+			}
+		}
+
+		const fetchAllPlayers = async () => {
+			try {
+				const playersTxn = await gameContract.getAllPlayers();
+				const players = [];
+				playersTxn.forEach(p => players.push(playerService.transformPlayerData(p)));
+				const sortedPlayers =  players.filter((p) => p.totalDamage).sort(function(a, b) {
+                    return a.totalDamage > b.totalDamage ? 1 : -1;
+                });
+				setAllPlayers(sortedPlayers)
 			} catch (error) {
 				console.log(error);
 			}
@@ -84,78 +102,125 @@ const Arena = ({ characterNFT, setCharacterNFT }) => {
 			setCharacterNFT((prevState) => {
 				return {...prevState, hp: playerHp};
 			});
+			fetchAllPlayers();
 		}
+
+		const onCriticalHit = async (criticalDamage) => {
+			const criticalHit = criticalDamage.toNumber();
+			setNewCriticalHit(criticalHit.toString());
+			setTimeout(() => {
+				setNewCriticalHit('');
+			}, 3000);
+		}
+
+		const onAttackMiss = async (attackMiss) => {
+			setNewCriticalHit(attackMiss);
+			setTimeout(() => {
+				setNewCriticalHit('');
+			}, 3000);
+		}
+
 		if (gameContract) {
 			fetchBoss();
+			fetchAllPlayers();
 			gameContract.on('AttackComplete', onAttackComplete);
+			gameContract.on('CriticalHit', onCriticalHit);
+			gameContract.on('AttackMiss', onAttackMiss);
 		}
+
 		return () => {
 			if (gameContract) {
 				gameContract.off('AttackComplete', onAttackComplete)
+				gameContract.off('CriticalHit', onCriticalHit);
+				gameContract.off('AttackMiss', onAttackMiss);
 			}
 		}
 	}, [gameContract])
 
 	return (
-		<div className="arena-container">
-			{isAttacking === 'attacking' && (
-				<div className="loading-indicator">
-					<LoadingIndicator />
-					<p>Attacking ⚔️</p>
-				</div>
-     		)}
-			{/* Add your toast HTML right here */}
-			{boss && characterNFT && (
-				<div id="toast" className={showToast ? 'show' : ''}>
-					<div id="desc">{`💥 ${boss.name} was hit for ${characterNFT.attackDamage}!`}</div>
-				</div>
-			)}
-			{/* Boss */}
-			{boss && 
-				<div className="boss-container">
-					<div className={`boss-content ${isAttacking}`}>
-						<h2>🔥 {boss.name} 🔥</h2>
-						<div className="image-content">
-						<img src={`https://cloudflare-ipfs.com/ipfs/${boss.imageURI}`} alt={`Boss ${boss.name}`} />
-						<div className="health-bar">
-							<progress value={boss.hp} max={boss.maxHp} />
-							<p>{`${boss.hp} / ${boss.maxHp} HP`}</p>
+		<>		
+			<div className="arena-container">
+				{/* Character NFT */}
+				{characterNFT && (
+					<div className="players-container">
+						<div className="player-container">
+						<h2>Your Character</h2>
+						<div className="player">
+							<div className="image-content">
+							<h2>{characterNFT.name}</h2>
+							<img
+								src={`https://cloudflare-ipfs.com/ipfs/${characterNFT.imageURI}`}
+								alt={`Character ${characterNFT.name}`}
+							/>
+							<div className="health-bar">
+								<progress value={characterNFT.hp} max={characterNFT.maxHp} />
+								<p>{`${characterNFT.hp} / ${characterNFT.maxHp} HP`}</p>
+							</div>
+							</div>
+							<div className="stats">
+							<h4>{`⚔️ Attack Damage: ${characterNFT.attackDamage}`}</h4>
+							</div>
 						</div>
 						</div>
 					</div>
-					<div className="attack-container">
-						<button className="cta-button" onClick={runAttackAction}>
-						{`💥 Attack ${boss.name}`}
-						</button>
-					</div>
-				</div>
-			}
+				)}
 
-			{/* Character NFT */}
-			{characterNFT && (
-				<div className="players-container">
-					<div className="player-container">
-					<h2>Your Character</h2>
-					<div className="player">
-						<div className="image-content">
-						<h2>{characterNFT.name}</h2>
-						<img
-							src={`https://cloudflare-ipfs.com/ipfs/${characterNFT.imageURI}`}
-							alt={`Character ${characterNFT.name}`}
-						/>
-						<div className="health-bar">
-							<progress value={characterNFT.hp} max={characterNFT.maxHp} />
-							<p>{`${characterNFT.hp} / ${characterNFT.maxHp} HP`}</p>
-						</div>
-						</div>
-						<div className="stats">
-						<h4>{`⚔️ Attack Damage: ${characterNFT.attackDamage}`}</h4>
+				{boss && 
+					<div className="attack-container">
+						{!isAttacking && 
+							<button className="cta-button" onClick={runAttackAction}>{`💥 Attack!`}</button>
+						}
+						{isAttacking === 'attacking' && (
+							<div className="loading-indicator">
+								<LoadingIndicator />
+								<p>Attacking ⚔️</p>
+							</div>
+						)}
+					</div>
+				}
+
+				{/* Boss */}
+				{boss && 
+					<div className="players-container">
+						<div className="boss-container">
+							<h2>Boss</h2>
+							<div className={`boss-content ${isAttacking}`}>
+								<h2>🔥 {boss.name} 🔥</h2>
+								<div className="image-content">
+								<img src={`https://cloudflare-ipfs.com/ipfs/${boss.imageURI}`} alt={`Boss ${boss.name}`} />
+								<div className="health-bar">
+									<progress value={boss.hp} max={boss.maxHp} />
+									<p>{`${boss.hp} / ${boss.maxHp} HP`}</p>
+								</div>
+								</div>
+							</div>
 						</div>
 					</div>
+				}
+
+
+
+				{/* Add your toast HTML right here */}
+				{boss && characterNFT && (
+					<div id="toast" className={showToast && !newCriticalHit ? 'show' : ''}>
+						<div id="desc">{`💥 ${boss.name} was hit for ${characterNFT.attackDamage}!`}</div>
 					</div>
-				</div>
-   			)}
-		</div>
+				)}
+				{/* Add your toast HTML right here */}
+				{boss && characterNFT && (
+					<div id="toast" className={newCriticalHit ? 'show' : ''} style={{backgroundColor: '#F492A7'}}>
+						<div id="desc">{`💥 ${boss.name} got a CRITICAL hit for ${newCriticalHit}!`}</div>
+					</div>
+				)}
+				{/* Add your toast HTML right here */}
+				{boss && characterNFT && (
+					<div id="toast2" className={newAttackMiss ? 'show' : ''} style={{backgroundColor: '#F3E862', color: '#181818'}}>
+						<div id="desc">{`💥 ${newAttackMiss}`}</div>
+					</div>
+				)}
+			</div>
+			<Highscore allPlayers={allPlayers}/>
+		</>
 	);
 };
 

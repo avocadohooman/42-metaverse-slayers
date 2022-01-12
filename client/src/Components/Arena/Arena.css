@@ -1,6 +1,6 @@
 .arena-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   margin: auto;
   color: white;
@@ -222,7 +222,8 @@
 }
 
 /* Toast */
-#toast {
+#toast,
+#toast2 {
   visibility: hidden;
   max-width: 500px;
   height: 90px;
@@ -240,12 +241,16 @@
   white-space: nowrap;
 }
 
+#toast2 {
+	bottom: 160px;
+}
+
 #toast #desc {
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 28px;
+  font-size: 20px;
   font-weight: bold;
   height: 90px;
   overflow: hidden;
@@ -259,6 +264,14 @@
   animation: fadein 0.5s, expand 0.5s 0.5s, stay 3s 1s, shrink 0.5s 4s,
     fadeout 0.5s 4.5s;
 }
+
+#toast2.show {
+	visibility: visible;
+	-webkit-animation: fadein2 0.5s, expand 0.5s 0.5s, stay 3s 1s, shrink 0.5s 2s,
+	  fadeout2 0.5s 2.5s;
+	animation: fadein2 0.5s, expand 0.5s 0.5s, stay 3s 1s, shrink 0.5s 4s,
+	  fadeout2 0.5s 4.5s;
+  }
 
 @-webkit-keyframes fadein {
   from {
@@ -281,6 +294,28 @@
     opacity: 1;
   }
 }
+
+@-webkit-keyframes fadein2 {
+	from {
+	  bottom: 0;
+	  opacity: 0;
+	}
+	to {
+	  bottom: 160px;
+	  opacity: 1;
+	}
+  }
+  
+  @keyframes fadein2 {
+	from {
+	  bottom: 0;
+	  opacity: 0;
+	}
+	to {
+	  bottom: 160px;
+	  opacity: 1;
+	}
+  }
 
 @-webkit-keyframes expand {
   from {
@@ -355,3 +390,24 @@
     opacity: 0;
   }
 }
+@-webkit-keyframes fadeout2 {
+	from {
+	  bottom: 160px;
+	  opacity: 1;
+	}
+	to {
+	  bottom: 60px;
+	  opacity: 0;
+	}
+  }
+  
+  @keyframes fadeout2 {
+	from {
+	  bottom: 160px;
+	  opacity: 1;
+	}
+	to {
+	  bottom: 60px;
+	  opacity: 0;
+	}
+  }
