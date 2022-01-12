@@ -4,6 +4,7 @@ import { ethers } from "ethers";
 import SelectCharacter from "./Components/SelectCharacter/SelectCharacter";
 import Arena from "./Components/Arena/Arena";
 import config from './config/config';
+import characterService from './services/characterService';
 
 // Constants
 
@@ -137,13 +138,7 @@ const App = () => {
 			const txn = await gameContract.checkIfUserHasNFT();
 			if (txn.name) {
 				console.log('user has NFT character: ', txn.name);
-				const userCharacter = {
-					name: txn.name,
-					imageURI: txn.imageURI,
-					hp: txn.hp.toNumber(),
-					maxHp: txn.maxHp.toNumber(),
-					attackDamage: txn.attackDamage.toNumber(),
-				};
+				const userCharacter = characterService.transformCharacterData(txn);
 				setCharacterNFT(userCharacter);
 			} else {
 				console.log('No character NFT found. Getting default game characters...');

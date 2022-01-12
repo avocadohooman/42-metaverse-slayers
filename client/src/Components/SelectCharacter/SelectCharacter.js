@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './SelectCharacter.css';
 import { ethers } from "ethers";
 import config from '../../config/config';
+import characterService from '../../services/characterService';
 
 const SelectCharacter = ({ setCharacterNFT }) => {
 	const [isMinting, setIsMinting] = useState(false);
@@ -56,16 +57,7 @@ const SelectCharacter = ({ setCharacterNFT }) => {
 			 */
 			const characters = [];
 			charactersTxn.forEach(c => {
-				const character = {
-					index: c.characterIndex.toNumber(),
-					name: c.name,
-					imageURI: c.imageURI,
-					hp: c.hp.toNumber(),
-					maxHp: c.maxHp.toNumber(),
-					darkMatter: c.darkMatter.toNumber(),
-					maxDarkMatter: c.maxDarkMatter.toNumber(),
-					attackDamage: c.attackDamage.toNumber(),
-				}
+				const character = characterService.transformCharacterData(c);
 				characters.push(character);
 			});
 
