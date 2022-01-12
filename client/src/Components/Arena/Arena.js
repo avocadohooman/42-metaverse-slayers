@@ -3,6 +3,7 @@ import './Arena.css';
 import { ethers } from "ethers";
 import config from '../../config/config';
 import characterService from '../../services/characterService';
+import LoadingIndicator from '../LoadingIndicator';
 
 /*
 * We pass in our characterNFT metadata so we can a cool card in our UI
@@ -13,6 +14,10 @@ const Arena = ({ characterNFT, setCharacterNFT }) => {
 	const [boss, setBoss] = useState(null);
 	const [isAttacking, setIsAttacking] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
+	/*
+	* Toast state management
+	*/
+	const [showToast, setShowToast] = useState(false);
 
 	const runAttackAction = async () => {
 		setIsAttacking('attacking');
@@ -23,6 +28,10 @@ const Arena = ({ characterNFT, setCharacterNFT }) => {
 				await attackTxn.wait();
 				console.log('attackTxn', attackTxn);
 				setIsAttacking('hit');
+				setShowToast(true);
+				setTimeout(() => {
+					setShowToast(false);
+				}, 3000);
 			} catch (error) {
 				console.error('Error attacking boss:', error);
 			}
@@ -89,6 +98,18 @@ const Arena = ({ characterNFT, setCharacterNFT }) => {
 
 	return (
 		<div className="arena-container">
+			{isAttacking === 'attacking' && (
+				<div className="loading-indicator">
+					<LoadingIndicator />
+					<p>Attacking ⚔️</p>
+				</div>
+     		)}
+			{/* Add your toast HTML right here */}
+			{boss && characterNFT && (
+				<div id="toast" className={showToast ? 'show' : ''}>
+					<div id="desc">{`💥 ${boss.name} was hit for ${characterNFT.attackDamage}!`}</div>
+				</div>
+			)}
 			{/* Boss */}
 			{boss && 
 				<div className="boss-container">
