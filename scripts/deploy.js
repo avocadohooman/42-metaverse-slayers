@@ -2,14 +2,14 @@ const deployContract = async () => {
 	const gameContractFactory = await hre.ethers.getContractFactory('EpicGame');
 	const gameContract = await gameContractFactory.deploy(
 		["Marvin", "Arthur Dent", "Zaphod Beeblebrox"],			// Names
-		["https://i.imgur.com/bxYy4aX.jpeg",					// Images
-		"https://i.imgur.com/sr38N1u.jpeg", 
-		"https://i.imgur.com/fC1NxWl.png"],
+		["QmYtJaAHiXLnaG23y6tn3vwCyhtgjoyjVVHZk6ZFMoqpcd",					// Images
+		"QmfHtoEAWNQmDuGQrRgWihMZ5xWQ13zm39Rs3PimtEGeB2", 
+		"QmeWifHLNvBJqRrBfksGayWUkCiRMGT5zmV8F5ZLk3R6dU"],
 		[600, 400, 250],										// HP values
 		[130, 260, 400],										// Dark matter values
 		[150, 200, 300],										// Attack damage values
 		"The Vogons",											// Boss name
-		"https://i.imgur.com/C8ztdR3.jpeg",						// Boss image
+		"QmV8mmgdCWwr4nwz2D88cXbWA4NseNvVgaXGj3HyfAREAQ",						// Boss image
 		4200,													// Boss hp
 		42,														// Boss max dmg
 	);

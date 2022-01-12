@@ -33,7 +33,7 @@ const SelectCharacter = ({ setCharacterNFT }) => {
 				<div className='character-item .name-container'>
 					<p>{c.name}</p>
 				</div>
-				<img src={c.imageURI} alt={c.name}/>
+				<img src={`https://cloudflare-ipfs.com/ipfs/${c.imageURI}`} alt={c.name}/>
 				<button
 					className="cta-button connect-wallet-button"
 					onClick={() => mintPlayerNFT(idx)}

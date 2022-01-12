@@ -22,24 +22,30 @@ const testContract = async () => {
 	await txn.wait();
 	console.log("Minted NFT #1");
   
-	txn = await gameContract.mintCharacterNFT(1);
-	await txn.wait();
-	console.log("Minted NFT #2");
+	let pxn;
+	pxn = await gameContract.getAllPlayers();
+	console.log('All players', pxn);
+	// txn = await gameContract.mintCharacterNFT(1);
+	// await txn.wait();
+	// console.log("Minted NFT #2");
   
-	txn = await gameContract.mintCharacterNFT(2);
-	await txn.wait();
-	console.log("Minted NFT #3");
+	// txn = await gameContract.mintCharacterNFT(2);
+	// await txn.wait();
+	// console.log("Minted NFT #3");
   
-	txn = await gameContract.mintCharacterNFT(1);
-	await txn.wait();
-	console.log("Minted NFT #4");
+	// txn = await gameContract.mintCharacterNFT(1);
+	// await txn.wait();
+	// console.log("Minted NFT #4");
 
 	txn = await gameContract.attackBoss();
 	await txn.wait();
 	txn = await gameContract.attackBoss();
+	pxn = await gameContract.getAllPlayers();
+	console.log('All players', pxn);
 
-	let tokenUri = await gameContract.tokenURI(1);
-	console.log("Token URI:", tokenUri);
+	// let tokenUri = await gameContract.tokenURI(1);
+	// console.log("Token URI:", tokenUri);
+
 
 }
 

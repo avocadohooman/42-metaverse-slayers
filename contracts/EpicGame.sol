@@ -11,6 +11,13 @@ import "./libraries/Base64.sol";
 
 contract EpicGame is ERC721{
 	/*
+		Will be used to determine a critical hit
+	*/
+	uint256 private criticalHitChance;
+	uint256 private criticalHitMultiplicator;
+	uint256 private attackMissChance;
+	uint256 private attackMissMultiplicator;
+	/*
 		Here we create a struct, that holds the attributed of each character.
 	*/
 	struct CharacterAttributes {
@@ -32,6 +39,14 @@ contract EpicGame is ERC721{
 		uint attackDamage;
 	}
 
+	struct Player {
+		uint256 nftTokenId;
+		uint	totalDamage;
+		address playerAddress;
+		string	characterName;
+		string	characterImage;
+	}
+
 	BigBoss public bigBoss;
 
 	// The tokenId is the NFTs unique identifier, it's just a number that goes
@@ -51,13 +66,22 @@ contract EpicGame is ERC721{
 
 	// A mapping/hash table from an address => the NFTs tokenId. Gives me an ez way
 	// to store the owner of the NFT and reference it later.
-	mapping(address => uint256) public nftHolders;
+	mapping(address => uint) public nftHolders;
 	
 	/*
 		Here we define event listener for NFTs minted, and when an attack has been completed
 	*/
 	event CharacterNFTMinted(address sender, uint256 tokenId, uint256 characterIndex);
 	event AttackComplete(uint newBossHp, uint newPlayerHp);
+	event CriticalHit(uint criticalDamage);
+	event AttackMiss(string attackMiss);
+
+
+	/*
+		An array that will hold and return all players. Updated every time the function
+		getAllPlayers() is being called
+	*/
+	Player[] allPlayers;
 
 	/*
   		Data passed in to the contract when it's first created initializing the characters.
@@ -100,6 +124,8 @@ contract EpicGame is ERC721{
 		console.log("Done initializing boss %s w/ HP %s, img %s", bigBoss.name, bigBoss.hp, bigBoss.imageURI);
 		// here we increment the tokenId so that the first NFT character starts with 1, instead of 0
 		_tokenIds.increment();
+		criticalHitMultiplicator = 1;
+		attackMissMultiplicator = 1;
     }
 
 	// here we return the NFT to a user, if one exists
@@ -119,6 +145,10 @@ contract EpicGame is ERC721{
 
 	function getBigBoss() public view returns (BigBoss memory) {
 		return bigBoss;
+	}
+
+	function getAllPlayers() public view returns (Player[] memory) {
+		return allPlayers;
 	}
 
 	function attackBoss() public {
@@ -147,17 +177,32 @@ contract EpicGame is ERC721{
 		*/
 		require(bigBoss.hp > 0, "Error: boss must have HP in order to attack");
 
+		criticalHitChance = (block.difficulty + block.timestamp + criticalHitChance) % 100;
+		attackMissChance = (block.difficulty + block.timestamp + criticalHitChance + attackMissChance) % 100;
+		if (criticalHitChance <= 10) {
+			criticalHitMultiplicator = 2;
+			emit CriticalHit(player.attackDamage * criticalHitMultiplicator);
+		}
+		if (attackMissChance <= 20) {
+			attackMissMultiplicator = 0;
+			emit AttackMiss(string(abi.encodePacked(bigBoss.name, " missed the attack!")));
+		}
 		// Allow player to attack boss.
 		if (bigBoss.hp < player.attackDamage) {
 			bigBoss.hp = 0;
 		} else {
-			bigBoss.hp = bigBoss.hp - player.attackDamage;
+			bigBoss.hp = bigBoss.hp - (player.attackDamage * criticalHitMultiplicator);
+			for (uint i; i < allPlayers.length; i++) {
+				if (allPlayers[i].playerAddress == msg.sender) {
+					allPlayers[i].totalDamage += (player.attackDamage * criticalHitMultiplicator);
+				}
+			}
 		}
 		// Allow boss to attack player.
 		if (player.hp < bigBoss.attackDamage) {
 			player.hp = 0;
 		} else {
-			player.hp = player.hp - bigBoss.attackDamage;
+			player.hp = player.hp - (bigBoss.attackDamage * attackMissMultiplicator);
 		}
 		// Console for ease.
 		console.log("Player attacked boss. New boss hp: %s", bigBoss.hp);
@@ -201,7 +246,13 @@ contract EpicGame is ERC721{
 
 		// keep an easy way to see who owns that NFT
 		nftHolders[msg.sender] = newItemId;
-
+		allPlayers.push(Player({
+			nftTokenId: newItemId,
+			totalDamage: 0,
+			playerAddress: msg.sender,
+			characterName: defaultCharacters[_characterIndex].name,
+			characterImage: defaultCharacters[_characterIndex].imageURI
+		}));
 		emit CharacterNFTMinted(msg.sender, newItemId, _characterIndex);
 		_tokenIds.increment();
 	}
@@ -224,7 +275,7 @@ contract EpicGame is ERC721{
 						charAttributes.name,
 						' -- NFT #: ',
 						Strings.toString(_tokenId),
-						'", "description": "This is an NFT that lets people play in the game Metaverse Slayer!", "image": "',
+						'", "description": "This is an NFT that lets people play in the game Metaverse Slayer!", "image": "https://cloudflare-ipfs.com/ipfs/',
 						charAttributes.imageURI,
 						'", "attributes": [ { "trait_type": "Health Points", "value": ',strHp,', "max_value":',strMaxHp,'}, { "trait_type": "Attack Damage", "value": ',
 						strAttackDamage,'}, { "trait_type": "Dark Matter Points", "value": ',strDm,', "max_value":',strMaxDm,'}]}'
