@@ -81,7 +81,7 @@ const Arena = ({ characterNFT, setCharacterNFT }) => {
 				const players = [];
 				playersTxn.forEach(p => players.push(playerService.transformPlayerData(p)));
 				const sortedPlayers =  players.filter((p) => p.totalDamage).sort(function(a, b) {
-                    return a.totalDamage > b.totalDamage ? 1 : -1;
+                    return a.totalDamage > b.totalDamage ? -1 : 1;
                 });
 				console.log('sortedPlayers', sortedPlayers);
 				setAllPlayers(sortedPlayers)
