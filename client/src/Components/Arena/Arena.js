@@ -114,9 +114,9 @@ const Arena = ({ characterNFT, setCharacterNFT }) => {
 		}
 
 		const onAttackMiss = async (attackMiss) => {
-			setNewCriticalHit(attackMiss);
+			setNewAttackMiss(attackMiss);
 			setTimeout(() => {
-				setNewCriticalHit('');
+				setNewAttackMiss('');
 			}, 3000);
 		}
 

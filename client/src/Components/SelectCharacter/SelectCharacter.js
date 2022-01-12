@@ -18,6 +18,7 @@ const SelectCharacter = ({ setCharacterNFT }) => {
 				const mintTxn = await gameContract.mintCharacterNFT(characterId);
 				await mintTxn.wait();
 				console.log('mintTxn:', mintTxn);
+				setCharacterNFT(characterService.transformCharacterData(mintTxn));
 			} else {
 				window.alert("Ethereum object doesn't exist!");
 			}
@@ -136,9 +137,6 @@ const SelectCharacter = ({ setCharacterNFT }) => {
 	return (
 		<div className="select-character-container">
 			<h2>Mint Your Hero. Choose wisely.</h2>
-			{defaultCharacters.length > 0 && (
-				<div className='character-grid character-item'>{renderCharacters()}</div>
-			)}
 			{isMinting && (
 				<div className="loading">
 					<div className="indicator">
@@ -151,6 +149,9 @@ const SelectCharacter = ({ setCharacterNFT }) => {
 					/>
 				</div>
     		)}
+			{defaultCharacters.length > 0 && (
+				<div className='character-grid character-item'>{renderCharacters()}</div>
+			)}
 		</div>
 	);
 }

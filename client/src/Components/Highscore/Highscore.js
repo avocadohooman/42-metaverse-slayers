@@ -4,9 +4,12 @@ import './Highscore.css';
 const Highscore = ({allPlayers}) => {
   return (
     <div className="all-players-container">
+		<div className='header-board all-players-container'>
+			⚔️ Metaverse Slayer Highscore Board ⚔️ 
+		</div>
 		<table>
 			<tbody>
-				<tr className='header'>
+				<tr className='header-table'>
 					<td>Rank</td>
 					<td>Character Name</td>
 					<td>Player</td>
