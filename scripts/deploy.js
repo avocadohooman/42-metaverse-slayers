@@ -10,7 +10,7 @@ const deployContract = async () => {
 		[150, 200, 300],										// Attack damage values
 		"The Vogons",											// Boss name
 		"QmV8mmgdCWwr4nwz2D88cXbWA4NseNvVgaXGj3HyfAREAQ",						// Boss image
-		4200,													// Boss hp
+		42000,													// Boss hp
 		42,														// Boss max dmg
 	);
 	await gameContract.deployed();
